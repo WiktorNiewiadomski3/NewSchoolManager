@@ -11,11 +11,19 @@ namespace SchoolManager.Models
     {
         public SchoolManagerContext()
         {
+            Database.EnsureCreated();
         }
 
         public SchoolManagerContext(DbContextOptions<SchoolManagerContext> options)
             : base(options)
         {
+            Database.EnsureCreated();
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            string connectionString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=SchoolManagerDatabase;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+            optionsBuilder.UseSqlServer(connectionString);
         }
 
         public virtual DbSet<Class> Classes { get; set; }
