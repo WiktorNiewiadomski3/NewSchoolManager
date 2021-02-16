@@ -1,0 +1,54 @@
+﻿{
+   "CodeGenerationMode": 0,
+   "ContextClassName": "SchoolManagerContext",
+   "ContextNamespace": null,
+   "DefaultDacpacSchema": null,
+   "FilterSchemas": false,
+   "IncludeConnectionString": false,
+   "ModelNamespace": null,
+   "OutputContextPath": null,
+   "OutputPath": "Models",
+   "ProjectRootNamespace": "SchoolManager",
+   "Schemas": null,
+   "SelectedHandlebarsLanguage": 0,
+   "SelectedToBeGenerated": 0,
+   "Tables": [
+      {
+         "Name": "[dbo].[CLASSES]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[GRADES]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PARENTS]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[STUDENTS]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SUBJECTS]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[TEACHERS]",
+         "ObjectType": 0
+      }
+   ],
+   "UiHint": "(localdb)\\MSSQLLocalDB.SchoolManagerDatabase",
+   "UseBoolPropertiesWithoutDefaultSql": false,
+   "UseDatabaseNames": false,
+   "UseDbContextSplitting": false,
+   "UseFluentApiOnly": true,
+   "UseHandleBars": false,
+   "UseInflector": true,
+   "UseLegacyPluralizer": false,
+   "UseNoConstructor": false,
+   "UseNoNavigations": false,
+   "UseNodaTime": false,
+   "UseNullableReferences": false,
+   "UseSpatial": false
+}
