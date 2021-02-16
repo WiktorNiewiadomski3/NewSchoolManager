@@ -15,6 +15,6 @@ namespace SchoolManager.Models
 
         public string Password { get; set; }
 
-        public UserTypes userType { get; set; }
+        public UserTypes Type { get; set; }
     }
 }
