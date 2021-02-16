@@ -1,12 +1,59 @@
-﻿<Window x:Class="SchoolManager.Windows.MainWindow"
+﻿<Window x:Class="SchoolManager.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SchoolManager.Windows"
+        xmlns:local="clr-namespace:SchoolManager"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
-    </Grid>
+        Title="MainWindow" Height="450" Width="500">
+    <TabControl>
+        <TabItem x:Name="TabParent" Header="Rodzic">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <DockPanel Grid.Row="0" Grid.Column="0">
+                    <Label Content="Dzieci" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
+                    <DataGrid x:Name="DGParentChildren" IsReadOnly="true" SelectionChanged="DGParentChildren_SelectionChanged">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Width="*" Header="Id" Binding="{Binding Id}" />
+                            <DataGridTextColumn Width="*" Header="Imię" Binding="{Binding Name}" />
+                            <DataGridTextColumn Width="*" Header="Nazwisko" Binding="{Binding Surname}" />
+                            <DataGridTextColumn Width="*" Header="Login" Binding="{Binding Login}" />
+                            <DataGridTextColumn Width="*" Header="Hasło" Binding="{Binding Password}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+
+                <DockPanel Grid.Row="0" Grid.Column="1">
+                    <Label Content="Oceny" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
+                    <DataGrid x:Name="DGParentChildrenGrades" Grid.Row="1" Grid.Column="1">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Width="*" Header="Przedmiot" Binding="{Binding Subject}"/>
+                            <DataGridTextColumn Width="*" Header="Oceny" Binding="{Binding Grades}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+
+            </Grid>
+        </TabItem>
+        <TabItem x:Name="TabStudent" Header="Uczeń">
+            <DockPanel Grid.Row="0" Grid.Column="0">
+                <Label Content="Oceny" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
+                <DataGrid x:Name="DGStudentGrades" Grid.Row="1" Grid.Column="1">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Width="*" Header="Przedmiot" Binding="{Binding Subject}"/>
+                        <DataGridTextColumn Width="*" Header="Oceny" Binding="{Binding Grades}"/>
+                        <DataGridTextColumn Width="*" Header="Średnia" Binding="{Binding Average}"/>
+                        <DataGridTextColumn Width="*" Header="Pozycja w klasie" Binding="{Binding Position}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </TabItem>
+        <TabItem x:Name="TabTeacher" Header="Nauczyciel" />
+    </TabControl>
 </Window>
