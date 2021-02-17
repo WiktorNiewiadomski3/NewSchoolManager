@@ -5,18 +5,21 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SchoolManager"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="500">
-    <TabControl>
+        Title="School Manager" Height="600" Width="800" WindowStartupLocation="CenterScreen" FontSize="16">
+    <TabControl x:Name="PnlTabs">
         <TabItem x:Name="TabParent" Header="Rodzic">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="102*"/>
+                    <ColumnDefinition Width="35*"/>
+                    <ColumnDefinition Width="62*"/>
+                    <ColumnDefinition Width="330*"/>
+                    <ColumnDefinition Width="265*"/>
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <DockPanel Grid.Row="0" Grid.Column="0">
+                <DockPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4">
                     <Label Content="Dzieci" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
                     <DataGrid x:Name="DGParentChildren" IsReadOnly="true" SelectionChanged="DGParentChildren_SelectionChanged">
                         <DataGrid.Columns>
@@ -29,7 +32,7 @@
                     </DataGrid>
                 </DockPanel>
 
-                <DockPanel Grid.Row="0" Grid.Column="1">
+                <DockPanel Grid.Row="0" Grid.Column="3" Grid.ColumnSpan="2" Margin="205,0,0,0">
                     <Label Content="Oceny" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
                     <DataGrid x:Name="DGParentChildrenGrades" Grid.Row="1" Grid.Column="1">
                         <DataGrid.Columns>
@@ -54,6 +57,92 @@
                 </DataGrid>
             </DockPanel>
         </TabItem>
-        <TabItem x:Name="TabTeacher" Header="Nauczyciel" />
+        <TabItem x:Name="TabTeacher" Header="Nauczyciel">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="2*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <DockPanel Grid.Row="0" Grid.Column="0">
+                    <Label x:Name="LblTeacherStudents" Content="Uczniowie" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
+                    <DataGrid x:Name="DGTeacherStudents" IsReadOnly="true" SelectionChanged="DGTeacherStudents_SelectionChanged">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Width="*" Header="Id" Binding="{Binding Id}" />
+                            <DataGridTextColumn Width="2*" Header="Imię" Binding="{Binding Name}" />
+                            <DataGridTextColumn Width="2*" Header="Nazwisko" Binding="{Binding Surname}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+
+                <DockPanel Grid.Row="0" Grid.Column="1">
+                    <Label Content="Oceny" DockPanel.Dock="Top" HorizontalAlignment="Center"/>
+                    <DataGrid x:Name="DGTeacherStudentsGrades" Grid.Row="1" Grid.Column="1">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Width="*" Header="Przedmiot" Binding="{Binding Subject}"/>
+                            <DataGridTextColumn Width="*" Header="Oceny" Binding="{Binding Grades}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+
+                <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Label Grid.Row="0" Grid.Column="0" Content="Imię" VerticalAlignment="Center" />
+                    <TextBox x:Name="TbxStudentName" Grid.Row="0" Grid.Column="1" Margin="8" Width="100"/>
+
+                    <Label Grid.Row="1" Grid.Column="0" Content="Nazwisko" VerticalAlignment="Center" />
+                    <TextBox x:Name="TbxStudentSurname" Grid.Row="1" Grid.Column="1" Margin="8" Width="100"/>
+
+                    <Label Grid.Row="0" Grid.Column="2" Content="Login" VerticalAlignment="Center" />
+                    <TextBox x:Name="TbxStudentLogin" Grid.Row="0" Grid.Column="3" Margin="8" Width="100"/>
+
+                    <Label Grid.Row="1" Grid.Column="2" Content="Hasło" VerticalAlignment="Center" />
+                    <TextBox x:Name="TbxStudentPassword" Grid.Row="1" Grid.Column="3" Margin="8" Width="100"/>
+
+                    <StackPanel Grid.Row="1" Grid.Column="4" Grid.ColumnSpan="2" Orientation="Horizontal">
+                        <Button x:Name="BtnAddStudent" Content="Dodaj" Margin="0 8 8 8" Width="70" Click="BtnAddStudent_Click"/>
+                        <Button x:Name="BtnRemoveStudent" Content="Usuń" Margin="2 8 8 8" Width="70" Click="BtnRemoveStudent_Click"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" Orientation="Horizontal">
+                        <Label Grid.Row="2" Grid.Column="0" Content="Ocena" VerticalAlignment="Center" />
+                        <ComboBox x:Name="CbxSubject" Grid.Row="2" Grid.Column="1" Margin="8" Width="100">
+                            <ComboBoxItem>Matematyka</ComboBoxItem>
+                            <ComboBoxItem>Fizyka</ComboBoxItem>
+                            <ComboBoxItem>Polski</ComboBoxItem>
+                            <ComboBoxItem>Chemia</ComboBoxItem>
+                            <ComboBoxItem>Angielski</ComboBoxItem>
+                        </ComboBox>
+                        <ComboBox x:Name="CbxGrade" Grid.Row="2" Grid.Column="1" Margin="8" Width="50">
+                            <ComboBoxItem>1</ComboBoxItem>
+                            <ComboBoxItem>2</ComboBoxItem>
+                            <ComboBoxItem>3</ComboBoxItem>
+                            <ComboBoxItem>4</ComboBoxItem>
+                            <ComboBoxItem>5</ComboBoxItem>
+                            <ComboBoxItem>6</ComboBoxItem>
+                        </ComboBox>
+                        <Button x:Name="BtnAddGrade" Content="Dodaj Ocenę" Margin="8" Padding="5" Click="BtnAddGrade_Click"/>
+                    </StackPanel>
+
+                </Grid>
+            </Grid>
+        </TabItem>
     </TabControl>
 </Window>

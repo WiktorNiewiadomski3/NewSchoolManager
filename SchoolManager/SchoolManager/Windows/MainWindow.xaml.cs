@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SchoolManager.Enums;
 using SchoolManager.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -18,36 +19,16 @@ namespace SchoolManager
         {
             InitializeComponent();
 
-            //PopulateData();
-            //return;
+            _schoolManagerContext.EnsureDatabaseIsPopulatedWithData();
 
-            List<Teacher> allTeachers = _schoolManagerContext.Teachers.ToList();
-            List<Parent> allParents = _schoolManagerContext.Parents.ToList();
-            List<Student> allStudents = _schoolManagerContext.Students.ToList();
-
-            List<User> users = new List<User>();
-
-            foreach (Teacher teacher in allTeachers)
-            {
-                teacher.Type = UserTypes.Teacher;
-                users.Add(teacher);
-            }
-
-            foreach (Parent parent in allParents)
-            {
-                parent.Type = UserTypes.Parent;
-                users.Add(parent);
-            }
-
-            foreach (Student student in allStudents)
-            {
-                student.Type = UserTypes.Student;
-                users.Add(student);
-            }
-
-            SignInView signInView = new SignInView(users);
+            SignInView signInView = new SignInView(_schoolManagerContext.Users);
 
             signInView.ShowDialog();
+
+            if (signInView.SignedInUser == null)
+            {
+                Environment.Exit(0);
+            }
 
             _signedInUser = signInView.SignedInUser;
 
@@ -77,6 +58,8 @@ namespace SchoolManager
         {
             TabTeacher.Visibility = Visibility.Collapsed;
             TabStudent.Visibility = Visibility.Collapsed;
+            PnlTabs.SelectedItem = TabParent;
+            TabParent.Header = $"Rodzic - {_signedInUser.Name} {_signedInUser.Surname}";
 
             List<Student> students = _schoolManagerContext.Students
                 .Include(s => s.Subjects)
@@ -85,7 +68,9 @@ namespace SchoolManager
 
             foreach (Student student in students)
             {
-                if (student.Parent == _signedInUser)
+                bool studentIsSignedInParentChild = student.Parent == _signedInUser;
+
+                if (studentIsSignedInParentChild)
                 {
                     DGParentChildren.Items.Insert(DGParentChildren.Items.Count, student);
                 }
@@ -96,6 +81,8 @@ namespace SchoolManager
         {
             TabParent.Visibility = Visibility.Collapsed;
             TabTeacher.Visibility = Visibility.Collapsed;
+            PnlTabs.SelectedItem = TabStudent;
+            TabStudent.Header = $"Uczeń - {_signedInUser.Name} {_signedInUser.Surname}";
 
             List<Student> students = _schoolManagerContext.Students
                 .Include(s => s.Subjects)
@@ -105,7 +92,7 @@ namespace SchoolManager
             Student signedInStuddent = _schoolManagerContext.Students
                 .Include(s => s.Subjects)
                 .ThenInclude(s => s.Grades)
-                .SingleOrDefault(s => s.Name == _signedInUser.Name && s.Surname == _signedInUser.Surname);
+                .SingleOrDefault(s => s.Id == _signedInUser.Id);
 
             foreach (Subject subject in signedInStuddent.Subjects)
             {
@@ -125,20 +112,40 @@ namespace SchoolManager
         {
             TabParent.Visibility = Visibility.Collapsed;
             TabStudent.Visibility = Visibility.Collapsed;
+            PnlTabs.SelectedItem = TabTeacher;
+            TabTeacher.Header = $"Nauczyciel - {_signedInUser.Name} {_signedInUser.Surname}";
+
+            DGTeacherStudents.Items.Clear();
+            DGTeacherStudentsGrades.Items.Clear();
+
+            List<Student> students = _schoolManagerContext.Students
+                .Include(s => s.Class)
+                .Include(s => s.Subjects)
+                .ThenInclude(s => s.Grades)
+                .ToList();
+
+            Teacher signedInTeacher = _schoolManagerContext.Teachers
+                .Include(t => t.Classes)
+                .SingleOrDefault(t => t.Id == _signedInUser.Id);
+
+            Class teacherClass = signedInTeacher.Classes.First();
+
+            LblTeacherStudents.Content += $" {teacherClass.Name}";
+
+            foreach (Student student in students)
+            {
+                bool studentBelongsToSignedInTeacherClass = student.Class.Teacher == _signedInUser;
+
+                if (studentBelongsToSignedInTeacherClass)
+                {
+                    DGTeacherStudents.Items.Insert(DGTeacherStudents.Items.Count, student);
+                }
+            }
         }
 
         private void DGParentChildren_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            DGParentChildrenGrades.Items.Clear();
-
-            Student selectedStudent = (Student)DGParentChildren.SelectedItem;
-
-            foreach (Subject subject in selectedStudent.Subjects)
-            {
-                string gradesString = GetGradesString(subject.Grades.ToList());
-
-                DGParentChildrenGrades.Items.Insert(DGParentChildrenGrades.Items.Count, new { Subject = subject.Name, Grades = gradesString });
-            }
+            PopulateGradesGridBySelectedStudent(DGParentChildren, DGParentChildrenGrades);
         }
 
         private string GetGradesString(List<Grade> grades)
@@ -159,11 +166,12 @@ namespace SchoolManager
 
             foreach (Student checkingStudent in students)
             {
-                Subject averageSubject = checkingStudent.Subjects.SingleOrDefault(s => s.Name == subject); // LINQ
+                Subject averageSubject = checkingStudent.Subjects.SingleOrDefault(s => s.Name == subject);
 
                 if (averageSubject == null)
                 {
                     positions.Add(checkingStudent, 0);
+                    continue;
                 }
 
                 decimal average = (decimal)averageSubject.Grades.Sum(g => g.Value) / averageSubject.Grades.Count();
@@ -171,64 +179,164 @@ namespace SchoolManager
                 positions.Add(checkingStudent, average);
             }
 
+            var orderedPositions = positions.OrderBy(x => x.Value).Reverse().ToList();
 
+            int position = 1;
 
-            return 0;
+            for (int i = 0; i < orderedPositions.Count - 1; i++)
+            {
+                Student currentStudent = orderedPositions[i].Key;
+
+                if (currentStudent == student)
+                {
+                    break;
+                }
+
+                position++;
+            }
+
+            return position;
         }
 
-        // Do usunięcia
-        private void PopulateData()
+        private void DGTeacherStudents_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            //var x = _schoolManagerContext.Students.Include(s => s.Subjects).ToList();
-            //x.ToList()[0].Subjects = x.ToList()[0].Subjects.Distinct().ToList();
-            //var p = _schoolManagerContext.Parents.First(p => p.Name == "Parent");
+            PopulateGradesGridBySelectedStudent(DGTeacherStudents, DGTeacherStudentsGrades);
+        }
 
-            //var ss = new Student { Name = "Student1", Surname = "Nowak", Login = "ss", Password = "ss", Type = UserTypes.Student, Parent = p };
-            //_schoolManagerContext.Students.Add(ss);
-            //_schoolManagerContext.SaveChanges();
+        private void PopulateGradesGridBySelectedStudent(DataGrid studentsGrid, DataGrid gradesGrid)
+        {
+            gradesGrid.Items.Clear();
 
-            //var s = _schoolManagerContext.Students.First(s => s.Name == "Student");
-            //var ss = _schoolManagerContext.Students.First(s => s.Name == "Student1");
+            Student selectedStudent = (Student)studentsGrid.SelectedItem;
 
-            //var x = new Subject { Name = "Matematyka", Student = s };
-            //x.Grades.Add(new Grade { Value = 1 });
-            //x.Grades.Add(new Grade { Value = 3 });
-            //ss.Subjects.Add(x);
+            bool gridIsBeingCleared = selectedStudent == null;
 
-            //var xx = new Subject { Name = "Matematyka", Student = ss };
-            //xx.Grades.Add(new Grade { Value = 4 });
-            //xx.Grades.Add(new Grade { Value = 6 });
-            //s.Subjects.Add(xx);
+            if (selectedStudent == null)
+            {
+                return;
+            }
 
-            //var y = new Subject { Name = "Polski", Student = s };
-            //y.Grades.Add(new Grade { Value = 3 });
-            //y.Grades.Add(new Grade { Value = 2 });
-            //y.Grades.Add(new Grade { Value = 5 });
-            //ss.Subjects.Add(y);
+            foreach (Subject subject in selectedStudent.Subjects)
+            {
+                string gradesString = GetGradesString(subject.Grades.ToList());
 
-            //var yy = new Subject { Name = "Polski", Student = ss };
-            //yy.Grades.Add(new Grade { Value = 2 });
-            //yy.Grades.Add(new Grade { Value = 4 });
-            //yy.Grades.Add(new Grade { Value = 3 });
-            //yy.Grades.Add(new Grade { Value = 2 });
-            //yy.Grades.Add(new Grade { Value = 4 });
-            //s.Subjects.Add(yy);
+                gradesGrid.Items.Insert(gradesGrid.Items.Count, new { Subject = subject.Name, Grades = gradesString });
+            }
+        }
 
-            //var z = new Subject { Name = "Chemia", Student = s };
-            //z.Grades.Add(new Grade { Value = 1 });
-            //z.Grades.Add(new Grade { Value = 3 });
-            //z.Grades.Add(new Grade { Value = 2 });
-            //ss.Subjects.Add(z);
+        private void BtnAddStudent_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(TbxStudentName.Text))
+            {
+                MessageBox.Show("Musisz podać imię dla nowego studenta.", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
 
-            //var zz = new Subject { Name = "Chemia", Student = ss };
-            //zz.Grades.Add(new Grade { Value = 5 });
-            //zz.Grades.Add(new Grade { Value = 6 });
-            //zz.Grades.Add(new Grade { Value = 5 });
-            //zz.Grades.Add(new Grade { Value = 5 });
-            //s.Subjects.Add(zz);
+            if (string.IsNullOrEmpty(TbxStudentSurname.Text))
+            {
+                MessageBox.Show("Musisz podać nazwisko dla nowego studenta.", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
 
+            if (string.IsNullOrEmpty(TbxStudentLogin.Text))
+            {
+                MessageBox.Show("Musisz podać login dla nowego studenta.", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
 
-            //_schoolManagerContext.SaveChanges();
+            if (string.IsNullOrEmpty(TbxStudentPassword.Text))
+            {
+                MessageBox.Show("Musisz podać hasło dla nowego studenta.", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            bool studentWithTheSameLoginAlreadyExists = _schoolManagerContext.Students.Any(s => s.Login == TbxStudentLogin.Text);
+
+            if (studentWithTheSameLoginAlreadyExists)
+            {
+                MessageBox.Show("Istnieje już student o podanym loginie.", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            Student newStudent = new Student
+            {
+                Name = TbxStudentName.Text,
+                Surname = TbxStudentSurname.Text,
+                Login = TbxStudentLogin.Text,
+                Password = TbxStudentPassword.Text
+            };
+
+            Teacher signedInTeacher = _schoolManagerContext.Teachers
+                .Include(t => t.Classes)
+                .SingleOrDefault(t => t.Id == _signedInUser.Id);
+
+            Class teacherClass = signedInTeacher.Classes.First();
+
+            teacherClass.Students.Add(newStudent);
+
+            _schoolManagerContext.SaveChanges();
+
+            TbxStudentName.Clear();
+            TbxStudentSurname.Clear();
+            TbxStudentLogin.Clear();
+            TbxStudentPassword.Clear();
+
+            InitializeTeacherTab();
+        }
+
+        private void BtnRemoveStudent_Click(object sender, RoutedEventArgs e)
+        {
+            if (DGTeacherStudents.SelectedItem == null)
+            {
+                MessageBox.Show("Musisz wybrać studenta z listy.", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            Student student = (Student)DGTeacherStudents.SelectedItem;
+
+            _schoolManagerContext.Remove(student);
+            _schoolManagerContext.SaveChanges();
+
+            InitializeTeacherTab();
+        }
+
+        private void BtnAddGrade_Click(object sender, RoutedEventArgs e)
+        {
+            if (DGTeacherStudents.SelectedItem == null)
+            {
+                MessageBox.Show("Musisz wybrać studenta z listy.", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            if (CbxSubject.SelectedItem == null)
+            {
+                MessageBox.Show("Musisz wybrać przedmiot.", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            if (CbxGrade.SelectedItem == null)
+            {
+                MessageBox.Show("Musisz wybrać ocenę.", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            ComboBoxItem selectedSubjectItem = (ComboBoxItem)CbxSubject.SelectedItem;
+            string subjectName = selectedSubjectItem.Content.ToString();
+
+            ComboBoxItem selectedGradeItem = (ComboBoxItem)CbxGrade.SelectedItem;
+            int gradeValue = Convert.ToInt32(selectedGradeItem.Content);
+
+            Student student = (Student)DGTeacherStudents.SelectedItem;
+
+            Subject subject = student.Subjects.Single(s => s.Name == subjectName);
+
+            Grade newGrade = new Grade { Value = gradeValue };
+
+            subject.Grades.Add(newGrade);
+
+            _schoolManagerContext.SaveChanges();
+
+            PopulateGradesGridBySelectedStudent(DGTeacherStudents, DGTeacherStudentsGrades);
         }
     }
 }
