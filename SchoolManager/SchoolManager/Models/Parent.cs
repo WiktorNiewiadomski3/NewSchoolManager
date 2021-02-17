@@ -13,8 +13,6 @@ namespace SchoolManager.Models
             Students = new HashSet<Student>();
         }
 
-        public int Id { get; set; }
-
         public virtual ICollection<Student> Students { get; set; }
     }
 }

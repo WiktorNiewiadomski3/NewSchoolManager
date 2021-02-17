@@ -13,7 +13,6 @@ namespace SchoolManager.Models
             Classes = new HashSet<Class>();
         }
 
-        public int Id { get; set; }
         public string MainSubject { get; set; }
 
         public virtual ICollection<Class> Classes { get; set; }

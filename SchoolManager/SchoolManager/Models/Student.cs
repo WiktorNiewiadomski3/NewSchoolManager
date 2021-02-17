@@ -13,7 +13,6 @@ namespace SchoolManager.Models
             Subjects = new HashSet<Subject>();
         }
 
-        public int Id { get; set; }
         public int? ParentId { get; set; }
         public int? ClassId { get; set; }
 
